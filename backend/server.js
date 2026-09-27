@@ -6,8 +6,6 @@ const morgan = require("morgan");
 
 const connectDB = require("./config/db");
 
-const { notFound, errorHandler } = require("./middleware/errorHandler");
-
 const authRoutes = require("./routes/authRoutes");
 const jobRoutes = require("./routes/jobRoutes");
 const candidateRoutes = require("./routes/candidateRoutes");
@@ -15,30 +13,31 @@ const applicationRoutes = require("./routes/applicationRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const offerRoutes = require("./routes/offerRoutes");
 
-connectDB();
-
 const app = express();
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  process.env.CLIENT_URL,
-].filter(Boolean);
+connectDB();
 
 app.use(
   cors({
-    origin: allowedOrigins,
-    credentials: true,
+    origin: [
+      "https://ricoz-recruit.vercel.app",
+      "http://localhost:5173",
+      "http://localhost:3000"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
   })
 );
 
-app.use(express.json());
+app.options("*", cors());
 
+app.use(express.json());
 app.use(morgan("dev"));
 
-app.get("/api/health", (req, res) => {
+app.get("/", (req, res) => {
   res.json({
-    status: "ok",
-    service: "RicozRecruit API",
+    message: "RicozRecruit API is running"
   });
 });
 
@@ -48,9 +47,6 @@ app.use("/api/candidates", candidateRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/offers", offerRoutes);
-
-app.use(notFound);
-app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
